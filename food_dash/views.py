@@ -4,5 +4,7 @@ from django.shortcuts import render
 
 def homepage(request):
 	print('Testing')
-	context = {}
+	context = {
+	}
 	return render(request, 'homepage.html', context)
+
