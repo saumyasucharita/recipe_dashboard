@@ -20,5 +20,8 @@ from food_dash import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.homepage)
+    path('', views.homepage),
+    path('search-recipes/', views.search_recipes),
+    path('compare-calories/', views.compare_calories),
+    path('nutrient-breakdown/', views.nutrient_breakdown)
 ]
