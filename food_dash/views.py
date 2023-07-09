@@ -1,9 +1,22 @@
 import requests
 from django.shortcuts import render
+from django import forms
 import pygal  
 
 #How to fetch from a env file (TBD HW-2)
 api_key = "99033f8fe5554466ac9ef2e7657a10fc"
+
+class NutrientForm(forms.Form):
+    minimum_calories = forms.IntegerField(label = "Minimum calories", widget=forms.TextInput(attrs={'placeholder': 100}))
+    maximum_calories = forms.IntegerField(label = "Maximum calories", required=False)
+    
+    # minumum_carbs = forms.IntegerField(max_length=10)
+    # maximum_carbs = forms.IntegerField(max_length=10)
+    # minimum_protein = forms.IntegerField(max_length=10)
+    # maximum_protein = forms.IntegerField(max_length=10)
+    # minimum_fat = forms.IntegerField(max_length=10)
+    # maximum_fat = forms.IntegerField(max_length=10)
+    
 # Helper function
 def spoonacular_api_call(request):
 	#Spoonacular API url
@@ -43,6 +56,18 @@ def spoonacular_api_call(request):
 		if len(request.GET['maxFat']) != 0:
 			query_str += '&maxFat='+request.GET['maxFat']
 
+	
+	
+	# if request.method == 'GET': 
+
+	# # Create a form instance and populate it with data from the request:
+	# 	form = NutrientForm(request.GET)
+
+	# # check whether it's valid:
+	# if form.is_valid():
+	# 	min_cals = form.cleaned_data['username']
+		
+
 	#Form the complete API url 
 	url+=query_str
 	print(url)
@@ -53,7 +78,9 @@ def spoonacular_api_call(request):
 # Create your views here.
 def homepage(request):
 	print('Homepage')
+	form = NutrientForm()
 	context = {
+		'form': form,
 	}
 	return render(request, 'homepage.html', context)
 

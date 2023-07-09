@@ -35,8 +35,8 @@
 		<h1>Enter your nutritional requirements for this meal </h1>
 		</div>
 		</div>
-		<form method="GET" action="/search-recipes/">
-        <div class="row">
+		<form method="POST" action="/search-recipes/">
+       <!-- <div class="row">
 				<div class="col-lg-6 mt-4">
                     <div class="input-group mb-2">
                         <label> Minimum calories <input name="minCalories" type="number" class="form-control form-control-lg" placeholder="200" /> </label>
@@ -99,7 +99,9 @@
                        <label> Maximum fat(grams)<input name="maxFat" type="number" class="form-control form-control-lg" placeholder="100" /> </label>
                     </div>
             </div>
-        </div>
+        </div> -->
+		
+		{{ form.as_p }}
 		
 		<div class="row">
 		<div class="col mt-4">
