@@ -7,78 +7,52 @@ import pygal
 api_key = "99033f8fe5554466ac9ef2e7657a10fc"
 
 class NutrientForm(forms.Form):
-    minimum_calories = forms.IntegerField(label = "Minimum calories", widget=forms.TextInput(attrs={'placeholder': 100}))
-    maximum_calories = forms.IntegerField(label = "Maximum calories", required=False)
-    
-    # minumum_carbs = forms.IntegerField(max_length=10)
-    # maximum_carbs = forms.IntegerField(max_length=10)
-    # minimum_protein = forms.IntegerField(max_length=10)
-    # maximum_protein = forms.IntegerField(max_length=10)
-    # minimum_fat = forms.IntegerField(max_length=10)
-    # maximum_fat = forms.IntegerField(max_length=10)
+    minCalories = forms.IntegerField(label = "Minimum calories", widget=forms.TextInput(attrs={'placeholder': 100}))
+    maxCalories = forms.IntegerField(label = "Maximum calories", required=False)
+    minCarbs = forms.IntegerField(min_value=0, label = "Minimum carbs(grams)", required=False)
+    maxCarbs = forms.IntegerField(min_value=0, label = "Maximum carbs(grams)", required=False)
+    minProtein = forms.IntegerField(min_value=0, label = "Minimum protein(grams)", required=False)
+    maxProtein = forms.IntegerField(min_value=0, label = "Maximum protein(grams)", required=False)
+    minFat = forms.IntegerField(min_value=0, label = "Minimum fat(grams)", required=False)
+    maxFat = forms.IntegerField(min_value=0, label = "Maximum fat(grams)", required=False)
+    saved_list_name = forms.CharField(max_length=127, label = "Diet Plan Name", required=False)
     
 # Helper function
 def spoonacular_api_call(request):
 	#Spoonacular API url
-	url = "https://api.spoonacular.com/recipes/findByNutrients?apiKey="+ api_key + "&number=10"
+	url = "https://api.spoonacular.com/recipes/findByNutrients?apiKey="+ api_key + "&number=5"
 
 	query_str = ''
-	#Set minCalories to 400 if the user has not provided the value in form
-	min_cals = request.GET['minCalories'] if request.GET['minCalories'] else 400
-	query_str += '&minCalories='+str(min_cals)
-
-	#Check if we have received the query parameters
-	if 'maxCalories' in request.GET:
-		if len(request.GET['maxCalories']) != 0:
-			query_str += '&maxCalories='+request.GET['maxCalories']
-
-	if 'minCarbs' in request.GET:
-		if len(request.GET['minCarbs']) != 0:
-			query_str += '&minCarbs='+request.GET['minCarbs']
-
-	if 'maxCarbs' in request.GET:
-		if len(request.GET['maxCarbs']) != 0:
-			query_str += '&maxCarbs='+request.GET['maxCarbs']
-
-	if 'minProtein' in request.GET:
-		if len(request.GET['minProtein']) != 0:
-			query_str += '&minProtein='+request.GET['minProtein']
-	
-	if 'maxProtein' in request.GET:
-		if len(request.GET['maxProtein']) != 0:
-			query_str += '&maxProtein='+request.GET['maxProtein']
-
-	if 'minFat' in request.GET:
-		if len(request.GET['minFat']) != 0:
-			query_str += '&minFat='+request.GET['minFat']
-
-	if 'maxFat' in request.GET:
-		if len(request.GET['maxFat']) != 0:
-			query_str += '&maxFat='+request.GET['maxFat']
-
-	
-	
-	# if request.method == 'GET': 
-
-	# # Create a form instance and populate it with data from the request:
-	# 	form = NutrientForm(request.GET)
-
-	# # check whether it's valid:
-	# if form.is_valid():
-	# 	min_cals = form.cleaned_data['username']
-		
+	for key, value in request.GET.items():
+		if len(value) != 0:
+			query_str += '&' + key + '=' + value
 
 	#Form the complete API url 
 	url+=query_str
 	print(url)
 
+	# params ={
+	# 	'apiKey' : api_key,
+	# 	'number' : 5,
+	# 	'minCalories' : request.GET.get('minCalories'),
+	# 	'maxCalories' : request.GET.get('maxCalories'),
+	# 	'minCarbs' : request.GET.get('minCarbs'),
+	# 	'maxCarbs' : request.GET.get('maxCarbs'),
+	# 	'minProtein' : request.GET.get('minProtein'),
+	# 	'maxProtein' : request.GET.get('maxProtein'),
+	# 	'minFat' : request.GET.get('minFat'),
+	# 	'maxFat' : request.GET.get('maxFat'),
+	# }
+	# print(params)
 	response = requests.get(url)
+	# print(response)
 	return response.json()
 
 # Create your views here.
 def homepage(request):
 	print('Homepage')
-	form = NutrientForm()
+	
+	form = NutrientForm() # Make a new blank form
 	context = {
 		'form': form,
 	}
@@ -86,17 +60,25 @@ def homepage(request):
 
 def search_recipes(request):
 	print('In search recipes view')
-	recipe_data = spoonacular_api_call(request)
+	
 
-	#Loop through the recipe_data list
-	for recipe in recipe_data:
-		recipe_id = recipe['id']
-		#Set the recipe url(another api call)
-		recipe_url = f'https://api.spoonacular.com/recipes/{recipe_id}/information?includeNutrition=false&apiKey={api_key}'
-		print(recipe_url)
-		recipe_info = requests.get(recipe_url).json()
-		#Add another field recipe_link to the recipe json
-		recipe['recipe_link'] = recipe_info['sourceUrl']
+	if 'minCalories' in request.GET:
+		form = NutrientForm(request.GET) # Make a form instance from GET data
+	
+		if form.is_valid(): # Check if valid (and as side-effect, generate cleaned_data dict)
+			recipe_data = spoonacular_api_call(request)
+			#Loop through the recipe_data list
+			for recipe in recipe_data:
+				recipe_id = recipe['id']
+				#Set the recipe url(another api call)
+				recipe_url = f'https://api.spoonacular.com/recipes/{recipe_id}/information?includeNutrition=false&apiKey={api_key}'
+				print(recipe_url)
+				recipe_info = requests.get(recipe_url).json()
+				#Add another field recipe_link to the recipe json
+				recipe['recipe_link'] = recipe_info['sourceUrl']
+
+	else:
+		form = NutrientForm()
 		
 	context = {
 		'recipes' : recipe_data,
